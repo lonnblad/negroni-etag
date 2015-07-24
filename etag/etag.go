@@ -16,7 +16,7 @@ type etagResponseWriter struct {
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 	etag := fmt.Sprintf("%x", md5.Sum(b))
 	erw.Header().Set("ETag", etag)
-	if erw.r.Header.Get("If-None-Match") == etag {
+	if erw.req.Header.Get("If-None-Match") == etag {
 		erw.writer.WriteHeader(304)
 		return erw.writer.Write(nil)
 	}
@@ -39,6 +39,6 @@ func Etag() *handler {
 }
 
 func (h *handler) ServeHTTP(writer http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	erw := &etagResponseWriter{writer, 200, req}
+	erw := &etagResponseWriter{writer, req, 200}
 	next(erw, req)
 }
