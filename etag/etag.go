@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type etagResponseWriter struct {
@@ -16,6 +17,7 @@ type etagResponseWriter struct {
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 	etag := fmt.Sprintf("%x", md5.Sum(b))
 	erw.Header().Set("ETag", etag)
+	erw.Header().Set("Last-Modified", time.Now().Format(time.RFC1123))
 	if erw.req.Header.Get("If-None-Match") == etag {
 		erw.writer.WriteHeader(304)
 		return erw.writer.Write(nil)
